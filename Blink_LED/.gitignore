@@ -1,0 +1,10 @@
+*.o
+*.hex
+*.elf
+*.lss
+*.map
+*.d
+*.eep
+*.aws
+default/
+
