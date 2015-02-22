@@ -128,11 +128,35 @@ void loop (void) {
       if (hextextpos == NULL) break;
     }
 
+    // Set fuses to 'final' state
+    /*   if (! programFuses(targetimage->image_normfuses))
+     error("Programming Fuses fail");
+     */
+    end_pmode();
+    start_pmode();
+
+    Serial.println("\nVerifing flash...");
+    if (! verifyImage(targetimage->image_hexcode) ) {
+      error(F("Failed to verify chip"));
+    } 
+    else {
+      Serial.println("\tFlash verified correctly!");
+    }
+
+    /*    if (! verifyFuses(targetimage->image_normfuses, targetimage->fusemask) ) {
+     error("Failed to verify fuses");
+     } 
+     else {
+     Serial.println("Fuses verified correctly!");
+     }*/
+
   }
   while (false);
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
+
+
 
 
 
