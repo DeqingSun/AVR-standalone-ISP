@@ -195,7 +195,7 @@ byte * readImagePage (byte *hextext, uint16_t pageaddr, uint8_t pagesize, byte *
 
     // read one line!
     if (pgm_read_byte(hextext++) != ':') {
-      error("No colon?");
+      error(F("No colon?"));
       break;
     }
     // Read the byte count into 'len'
@@ -248,7 +248,7 @@ byte * readImagePage (byte *hextext, uint16_t pageaddr, uint8_t pagesize, byte *
       page_idx++;
 
       if (page_idx > pagesize) {
-        error("Too much code");
+        error(F("Too much code"));
         break;
       }
     }
@@ -256,11 +256,11 @@ byte * readImagePage (byte *hextext, uint16_t pageaddr, uint8_t pagesize, byte *
     b = (b<<4) + hexton(pgm_read_byte(hextext++));
     cksum += b;
     if (cksum != 0) {
-      error("Bad checksum: ");
+      error(F("Bad checksum: "));
       Serial.print(cksum, HEX);
     }
     if (pgm_read_byte(hextext++) != '\n') {
-      error("No end of line");
+      error(F("No end of line"));
       break;
     }
 #if VERBOSE
@@ -343,7 +343,7 @@ boolean verifyImage (byte *hextext)  {
 
     // read one line!
     if (pgm_read_byte(hextext++) != ':') {
-      error("No colon");
+      error(F("No colon"));
       return false;
     }
     len = hexton(pgm_read_byte(hextext++));
@@ -415,12 +415,12 @@ boolean verifyImage (byte *hextext)  {
     b = (b<<4) + hexton(pgm_read_byte(hextext++));
     cksum += b;
     if (cksum != 0) {
-      error("Bad checksum: ");
+      error(F("Bad checksum: "));
       Serial.print(cksum, HEX);
       return false;
     }
     if (pgm_read_byte(hextext++) != '\n') {
-      error("No end of line");
+      error(F("No end of line"));
       return false;
     }
   }

@@ -46,7 +46,7 @@ byte pageBuffer[128]; 		       /* One page of flash */
 #define LED_PROGMODE A0
 
 void setup () {
-  Serial.begin(57600); 			/* Initialize serial for status msgs */
+  Serial.begin(115200); 			/* Initialize serial for status msgs */
   Serial.println(F("\nAdaBootLoader Bootstrap programmer (originally OptiLoader Bill Westfield (WestfW))"));
 
   pinMode(PIEZOPIN, OUTPUT);
@@ -84,11 +84,11 @@ void loop (void) {
     image_t *targetimage;
 
     if (! (signature = readSignature())){		// Figure out what kind of CPU
-      error("Signature fail");
+      error_no_fatal(F("Signature fail"));
       break;
     }
     if (! (targetimage = findImage(signature))){	// look for an image
-      error("Image fail");
+      error_no_fatal(F("Image fail"));
       break;
     }
   }

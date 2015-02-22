@@ -1,9 +1,9 @@
 void flashprint (const char p[])
 {
-    byte c;
-    while (0 != (c = pgm_read_byte(p++))) {
-	Serial.write(c);
-    }
+  byte c;
+  while (0 != (c = pgm_read_byte(p++))) {
+    Serial.write(c);
+  }
 }
 
 /*
@@ -16,7 +16,7 @@ byte hexton (byte h)
     return(h - '0');
   if (h >= 'A' && h <= 'F')
     return((h - 'A') + 10);
-  error("Bad hex digit!");
+  error(F("Bad hex digit!"));
 }
 
 /*
@@ -35,12 +35,19 @@ void pulse (int pin, int times) {
 }
 
 
-void error(char *string) { 
+void error(const __FlashStringHelper *string) { 
   Serial.println(string); 
   digitalWrite(LED_ERR, HIGH);  
-  //while(1) {
+  while(1) {
+    tone(PIEZOPIN, 4000, 500);
+  }
+}
+
+void error_no_fatal(const __FlashStringHelper *string) { 
+  Serial.println(string); 
+  digitalWrite(LED_ERR, HIGH);  
   tone(PIEZOPIN, 4000, 500);
-  //}
+  digitalWrite(LED_ERR, LOW);  
 }
 
 void start_pmode () {
@@ -102,6 +109,8 @@ boolean target_poweroff ()
   digitalWrite(LED_PROGMODE, LOW);
   return true;
 }
+
+
 
 
 
