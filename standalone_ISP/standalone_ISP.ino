@@ -76,5 +76,29 @@ void loop (void) {
     if  ((! digitalRead(BUTTON)) || (Serial.read() == 'G'))
       break;  
   }
+
+  do{
+    target_poweron(); 			/* Turn on target power */
+
+    uint16_t signature;
+    image_t *targetimage;
+
+    if (! (signature = readSignature())){		// Figure out what kind of CPU
+      error("Signature fail");
+      break;
+    }
+    /*   if (! (targetimage = findImage(signature))){	// look for an image
+     error("Image fail");
+     break;
+     }*/
+  }
+  while (false);
+  target_poweroff(); 			/* turn power off */
+  tone(PIEZOPIN, 4000, 200);
 }
+
+
+
+
+
 
