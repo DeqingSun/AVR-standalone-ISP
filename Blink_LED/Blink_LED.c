@@ -2,7 +2,12 @@
 #include <util/delay.h>
 
 int main(void){
+	DDRB|=(1<<PB1);
 	DDRB|=(1<<PB4);
+	TCCR0A=(0b01<<COM0B0)|(0b10<<WGM00);	//CTC mode
+	TCCR0B=(0b010<<CS00);
+	OCR0A=149;
+
 	while(1){
 		_delay_ms(500);
 		PORTB^=(1<<PB4);

@@ -8,3 +8,5 @@
 *.aws
 default/
 
+*.dbk
+*.sdf
