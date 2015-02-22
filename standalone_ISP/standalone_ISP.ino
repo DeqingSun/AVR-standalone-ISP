@@ -93,13 +93,16 @@ void loop (void) {
     }
 
     eraseChip();
-    /*
-    if (! programFuses(targetimage->image_progfuses))	// get fuses ready to program
-     error("Programming Fuses fail");
-     
-     if (! verifyFuses(targetimage->image_progfuses, targetimage->fusemask) ) {
-     error("Failed to verify fuses");
-     } */
+
+    if (! programFuses(targetimage->image_progfuses)){	// get fuses ready to program
+      error_no_fatal(F("Programming Fuses fail"));
+      break;
+    }
+
+    if (! verifyFuses(targetimage->image_progfuses, targetimage->fusemask) ) {
+      error_no_fatal(F("Failed to verify fuses"));
+      break;
+    }
 
     end_pmode();
     start_pmode();    
@@ -120,7 +123,8 @@ void loop (void) {
       }          
       if (! blankpage) {
         if (! flashPage(pageBuffer, pageaddr, pagesize))	
-          error(F("Flash programming failed"));
+          error_no_fatal(F("Flash programming failed"));
+          break;
       }
       hextext = hextextpos;
       pageaddr += pagesize;
@@ -137,7 +141,8 @@ void loop (void) {
 
     Serial.println("\nVerifing flash...");
     if (! verifyImage(targetimage->image_hexcode) ) {
-      error(F("Failed to verify chip"));
+      error_no_fatal(F("Failed to verify chip"));
+      break;
     } 
     else {
       Serial.println("\tFlash verified correctly!");
@@ -155,6 +160,8 @@ void loop (void) {
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
+
+
 
 
 

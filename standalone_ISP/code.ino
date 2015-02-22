@@ -81,6 +81,7 @@ boolean programFuses (const byte *fuses)
     Serial.print(F("\n  Set Lock Fuse to: "));
     Serial.print(f, HEX);
     Serial.print(F(" -> "));
+    busyWait();
     Serial.print(spi_transaction(0xAC, 0xE0, 0x00, f), HEX);
   }
   f = pgm_read_byte(&fuses[FUSE_LOW]);
@@ -88,6 +89,7 @@ boolean programFuses (const byte *fuses)
     Serial.print(F("  Set Low Fuse to: "));
     Serial.print(f, HEX);
     Serial.print(F(" -> "));
+    busyWait();
     Serial.print(spi_transaction(0xAC, 0xA0, 0x00, f), HEX);
   }
   f = pgm_read_byte(&fuses[FUSE_HIGH]);
@@ -95,6 +97,7 @@ boolean programFuses (const byte *fuses)
     Serial.print(F("  Set High Fuse to: "));
     Serial.print(f, HEX);
     Serial.print(F(" -> "));
+    busyWait();
     Serial.print(spi_transaction(0xAC, 0xA8, 0x00, f), HEX);
   }
   f = pgm_read_byte(&fuses[FUSE_EXT]);
@@ -102,6 +105,7 @@ boolean programFuses (const byte *fuses)
     Serial.print(F("  Set Ext Fuse to: "));
     Serial.print(f, HEX);
     Serial.print(F(" -> "));
+    busyWait();
     Serial.print(spi_transaction(0xAC, 0xA4, 0x00, f), HEX);
   }
   Serial.println();
@@ -119,6 +123,7 @@ boolean verifyFuses (const byte *fuses, const byte *fusemask)
   Serial.println(F("Verifying fuses..."));
   f = pgm_read_byte(&fuses[FUSE_PROT]);
   if (f) {
+    busyWait();
     uint8_t readfuse = spi_transaction(0x58, 0x00, 0x00, 0x00);  // lock fuse
     readfuse &= pgm_read_byte(&fusemask[FUSE_PROT]);
     Serial.print(F("\tLock Fuse: ")); 
@@ -130,6 +135,7 @@ boolean verifyFuses (const byte *fuses, const byte *fusemask)
   }
   f = pgm_read_byte(&fuses[FUSE_LOW]);
   if (f) {
+    busyWait();
     uint8_t readfuse = spi_transaction(0x50, 0x00, 0x00, 0x00);  // low fuse
     Serial.print(F("\tLow Fuse: 0x"));  
     Serial.print(f, HEX); 
@@ -141,6 +147,7 @@ boolean verifyFuses (const byte *fuses, const byte *fusemask)
   }
   f = pgm_read_byte(&fuses[FUSE_HIGH]);
   if (f) {
+    busyWait();
     uint8_t readfuse = spi_transaction(0x58, 0x08, 0x00, 0x00);  // high fuse
     readfuse &= pgm_read_byte(&fusemask[FUSE_HIGH]);
     Serial.print(F("\tHigh Fuse: 0x"));  
@@ -152,6 +159,7 @@ boolean verifyFuses (const byte *fuses, const byte *fusemask)
   }
   f = pgm_read_byte(&fuses[FUSE_EXT]);
   if (f) {
+    busyWait();
     uint8_t readfuse = spi_transaction(0x50, 0x08, 0x00, 0x00);  // ext fuse
     readfuse &= pgm_read_byte(&fusemask[FUSE_EXT]);
     Serial.print(F("\tExt Fuse: 0x")); 
@@ -299,7 +307,7 @@ void flashWord (uint8_t hilo, uint16_t addr, uint8_t data) {
 // Basically, write the pagebuff (with pagesize bytes in it) into page $pageaddr
 boolean flashPage (byte *pagebuff, uint16_t pageaddr, uint8_t pagesize) {  
   SPI.setClockDivider(CLOCKSPEED_FLASH); 
-
+  busyWait();
 
   Serial.print(F("Flashing page ")); 
   Serial.println(pageaddr, HEX);
@@ -466,6 +474,7 @@ uint16_t spi_transaction (uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   m = SPI.transfer(c);
   return 0xFFFFFF & ((n<<16)+(m<<8) + SPI.transfer(d));
 }
+
 
 
 

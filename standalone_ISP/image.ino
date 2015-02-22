@@ -8,13 +8,13 @@ image_t PROGMEM image_328 = {
   ,
   0x9007,				/* Signature bytes for 328P */
   {
-    0x3F, 0xFF, 0xDA, 0x05  }
+    0x03, 0x6A, 0x1F, 0x00  }
   ,            // pre program fuses (prot/lock, low, high, ext)
   {
     0x0F, 0x0, 0x0, 0x0  }
   ,            // post program fuses
   {
-    0x3F, 0xFF, 0xFF, 0x07  }
+    0x03, 0xFF, 0x1F, 0x00  }
   ,           // fuse mask
   1024,     // size of chip flash in bytes
   32,   // size in bytes of flash page
