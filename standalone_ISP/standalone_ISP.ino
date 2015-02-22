@@ -91,11 +91,52 @@ void loop (void) {
       error_no_fatal(F("Image fail"));
       break;
     }
+
+    eraseChip();
+    /*
+    if (! programFuses(targetimage->image_progfuses))	// get fuses ready to program
+     error("Programming Fuses fail");
+     
+     if (! verifyFuses(targetimage->image_progfuses, targetimage->fusemask) ) {
+     error("Failed to verify fuses");
+     } */
+
+    end_pmode();
+    start_pmode();    
+
+
+    byte *hextext = targetimage->image_hexcode;  
+    uint16_t pageaddr = 0;
+    uint8_t pagesize = pgm_read_byte(&targetimage->image_pagesize);
+    uint16_t chipsize = pgm_read_word(&targetimage->chipsize);
+
+    //Serial.println(chipsize, DEC);
+    while (pageaddr < chipsize) {
+      byte *hextextpos = readImagePage (hextext, pageaddr, pagesize, pageBuffer);
+
+      boolean blankpage = true;
+      for (uint8_t i=0; i<pagesize; i++) {
+        if (pageBuffer[i] != 0xFF) blankpage = false;
+      }          
+      if (! blankpage) {
+        if (! flashPage(pageBuffer, pageaddr, pagesize))	
+          error(F("Flash programming failed"));
+      }
+      hextext = hextextpos;
+      pageaddr += pagesize;
+
+      if (hextextpos == NULL) break;
+    }
+
   }
   while (false);
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
+
+
+
+
 
 
 

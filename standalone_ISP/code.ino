@@ -1,5 +1,5 @@
 #include "optiLoader.h"
-
+//#define VERBOSE 1
 /*
  * Bootload images.
  * These are the intel Hex files produced by the optiboot makefile,
@@ -181,6 +181,7 @@ byte * readImagePage (byte *hextext, uint16_t pageaddr, uint8_t pagesize, byte *
   uint16_t len;
   uint8_t page_idx = 0;
   byte *beginning = hextext;
+  boolean endoffile = false;
 
   byte b, cksum = 0;
 
@@ -225,6 +226,7 @@ byte * readImagePage (byte *hextext, uint16_t pageaddr, uint8_t pagesize, byte *
     //Serial.print("Record type "); Serial.println(b, HEX);
     if (b == 0x1) { 
       // end record!
+      endoffile = true;
       break;
     } 
 #if VERBOSE
@@ -274,7 +276,12 @@ byte * readImagePage (byte *hextext, uint16_t pageaddr, uint8_t pagesize, byte *
   Serial.print(F("\n  Total bytes read: "));
   Serial.println(page_idx, DEC);
 #endif
-  return hextext;
+  if (!endoffile){
+    return hextext;
+  }
+  else{
+    return NULL;
+  }
 }
 
 // Send one byte to the page buffer on the chip
@@ -311,7 +318,7 @@ boolean flashPage (byte *pagebuff, uint16_t pageaddr, uint8_t pagesize) {
   }
 
   // page addr is in bytes, byt we need to convert to words (/2)
-  pageaddr = (pageaddr/2) & 0xFFC0;
+  pageaddr = (pageaddr/2) & (~(((pagesize/2)-1)));
 
   uint16_t commitreply = spi_transaction(0x4C, (pageaddr >> 8) & 0xFF, pageaddr & 0xFF, 0);
 
@@ -380,7 +387,7 @@ boolean verifyImage (byte *hextext)  {
       Serial.print(lineaddr, HEX);
       Serial.print(F(":0x"));
       Serial.print(b, HEX);
-      Serial.write(F(" ? "));
+      Serial.print(F(" ? "));
 #endif
 
       // verify this byte!
@@ -459,5 +466,6 @@ uint16_t spi_transaction (uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   m = SPI.transfer(c);
   return 0xFFFFFF & ((n<<16)+(m<<8) + SPI.transfer(d));
 }
+
 
 
