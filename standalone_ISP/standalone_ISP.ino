@@ -87,15 +87,16 @@ void loop (void) {
       error("Signature fail");
       break;
     }
-    /*   if (! (targetimage = findImage(signature))){	// look for an image
-     error("Image fail");
-     break;
-     }*/
+    if (! (targetimage = findImage(signature))){	// look for an image
+      error("Image fail");
+      break;
+    }
   }
   while (false);
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
+
 
 
 

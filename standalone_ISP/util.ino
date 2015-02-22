@@ -1,3 +1,11 @@
+void flashprint (const char p[])
+{
+    byte c;
+    while (0 != (c = pgm_read_byte(p++))) {
+	Serial.write(c);
+    }
+}
+
 /*
  * hexton
  * Turn a Hex digit (0..9, A..F) into the equivalent binary value (0-16)
