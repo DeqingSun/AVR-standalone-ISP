@@ -122,9 +122,10 @@ void loop (void) {
         if (pageBuffer[i] != 0xFF) blankpage = false;
       }          
       if (! blankpage) {
-        if (! flashPage(pageBuffer, pageaddr, pagesize))	
+        if (! flashPage(pageBuffer, pageaddr, pagesize)){	
           error_no_fatal(F("Flash programming failed"));
           break;
+        }
       }
       hextext = hextextpos;
       pageaddr += pagesize;
@@ -160,6 +161,8 @@ void loop (void) {
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
+
+
 
 
 
