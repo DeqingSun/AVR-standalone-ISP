@@ -82,9 +82,9 @@ boolean target_poweron ()
   digitalWrite(RESET, LOW);  // reset it right away.
   pinMode(RESET, OUTPUT);
   delay(100);
-  Serial.print("Starting Program Mode");
+  Serial.print(F("Starting Program Mode"));
   start_pmode();
-  Serial.println(" [OK]");
+  Serial.println(F(" [OK]"));
   return true;
 }
 
