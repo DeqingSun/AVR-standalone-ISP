@@ -134,9 +134,11 @@ void loop (void) {
     }
 
     // Set fuses to 'final' state
-    /*   if (! programFuses(targetimage->image_normfuses))
-     error("Programming Fuses fail");
-     */
+    if (! programFuses(targetimage->image_normfuses)){
+      error_no_fatal(F("Programming Fuses fail"));
+      break;
+    }
+
     end_pmode();
     start_pmode();
 
@@ -146,21 +148,23 @@ void loop (void) {
       break;
     } 
     else {
-      Serial.println("\tFlash verified correctly!");
+      Serial.println(F("\tFlash verified correctly!"));
     }
 
-    /*    if (! verifyFuses(targetimage->image_normfuses, targetimage->fusemask) ) {
-     error("Failed to verify fuses");
-     } 
-     else {
-     Serial.println("Fuses verified correctly!");
-     }*/
+    if (! verifyFuses(targetimage->image_normfuses, targetimage->fusemask) ) {
+      error_no_fatal(F("Failed to verify fuses"));
+      break;
+    } 
+    else {
+      Serial.println(F("Fuses verified correctly!"));
+    }
 
   }
   while (false);
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
+
 
 
 
