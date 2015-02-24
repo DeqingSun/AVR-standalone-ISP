@@ -107,6 +107,44 @@ void loop (void) {
     end_pmode();
     start_pmode();    
 
+    if (targetimage->image_calibration!=NULL){
+      Serial.println(F("\nStart calibration, write calibration firmware"));
+      byte *hextext = (byte *)pgm_read_word(&targetimage->image_calibration);  
+      uint16_t pageaddr = 0;
+      uint8_t pagesize = pgm_read_byte(&targetimage->image_pagesize);
+      uint16_t chipsize = pgm_read_word(&targetimage->chipsize);
+
+      while (pageaddr < chipsize) {
+        byte *hextextpos = readImagePage (hextext, pageaddr, pagesize, pageBuffer);
+
+        boolean blankpage = true;
+        for (uint8_t i=0; i<pagesize; i++) {
+          if (pageBuffer[i] != 0xFF) blankpage = false;
+        }          
+        if (! blankpage) {
+          if (! flashPage(pageBuffer, pageaddr, pagesize)){	
+            error_no_fatal(F("Flash programming failed"));
+            break;
+          }
+        }
+        hextext = hextextpos;
+        pageaddr += pagesize;
+
+        if (hextextpos == NULL) break;
+      }
+
+      break;
+
+
+
+      end_pmode();
+      start_pmode();    
+
+    }
+    else{
+      Serial.println(F("\nNo need to calibrate"));
+    }
+
 
     byte *hextext = targetimage->image_hexcode;  
     uint16_t pageaddr = 0;
@@ -164,21 +202,5 @@ void loop (void) {
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

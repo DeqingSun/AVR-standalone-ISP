@@ -32,6 +32,7 @@ typedef struct image {
     byte fusemask[4];
     uint16_t chipsize;
     byte image_pagesize;	       /* page size for flash programming */
+    char PROGMEM *image_calibration;
     byte image_hexcode[3000];	       /* intel hex format image (text) */
 } image_t;
 
