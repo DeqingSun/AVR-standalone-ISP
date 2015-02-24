@@ -33,7 +33,7 @@ typedef struct image {
     uint16_t chipsize;
     byte image_pagesize;	       /* page size for flash programming */
     char PROGMEM *image_calibration;
-    byte image_hexcode[3000];	       /* intel hex format image (text) */
+    char PROGMEM *image_final;	       /* intel hex format image (text) */
 } image_t;
 
 typedef struct alias {

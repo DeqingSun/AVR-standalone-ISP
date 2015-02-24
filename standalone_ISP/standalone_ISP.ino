@@ -107,7 +107,7 @@ void loop (void) {
     end_pmode();
     start_pmode();    
 
-    if (targetimage->image_calibration!=NULL){
+    if (0&targetimage->image_calibration!=NULL){
       Serial.println(F("\nStart calibration, write calibration firmware"));
       byte *hextext = (byte *)pgm_read_word(&targetimage->image_calibration);  
       uint16_t pageaddr = 0;
@@ -146,7 +146,7 @@ void loop (void) {
     }
 
 
-    byte *hextext = targetimage->image_hexcode;  
+    byte *hextext = (byte *)pgm_read_word(&targetimage->image_final);  
     uint16_t pageaddr = 0;
     uint8_t pagesize = pgm_read_byte(&targetimage->image_pagesize);
     uint16_t chipsize = pgm_read_word(&targetimage->chipsize);
@@ -181,7 +181,7 @@ void loop (void) {
     start_pmode();
 
     Serial.println("\nVerifing flash...");
-    if (! verifyImage(targetimage->image_hexcode) ) {
+    if (! verifyImage((byte *)pgm_read_word(&targetimage->image_final)) ) {
       error_no_fatal(F("Failed to verify chip"));
       break;
     } 

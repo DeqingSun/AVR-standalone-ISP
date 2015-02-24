@@ -1,6 +1,5 @@
-char PROGMEM calibration_firmware[]  =  //in programmer's notepad use "\1\\n" to replace (\S+) , use flash and read back for alignment
-{  
-  ":1000000009C0FFFFFFFFFFFFFFFFFFFFFFFFFFFF35\n"
+char PROGMEM calibration_firmware[] = {  //in programmer's notepad use "\1\\n" to replace (\S+) , use flash and read back for alignment
+    ":1000000009C0FFFFFFFFFFFFFFFFFFFFFFFFFFFF35\n"
     ":10001000FFFFFFFF002401E0102E0FE90DBF00E0FD\n"
     ":1000200002BBC09AC19AB99A1CD000E002BB00E0A2\n"
     ":100030000EBB01B70DBB04E00CBB06E00CBB00001F\n"
@@ -27,34 +26,29 @@ char PROGMEM calibration_firmware[]  =  //in programmer's notepad use "\1\\n" to
     ":00000001FF\n"
 };
 
+char PROGMEM final_firmware[]  =  {
+    ":1000000009C00EC00DC00CC00BC00AC009C008C09A\n"
+    ":1000100007C006C011241FBECFE9CDBF02D010C05B\n"
+    ":10002000EFCFBC9A90E12FEB34ED41E0215030400E\n"
+    ":100030004040E1F700C0000088B3892788BBF3CFB8\n"
+    ":04004000F894FFCF62\n"
+    ":00000001FF\n"
+};
+
 image_t PROGMEM image_328 = {
-  {
-    "test.hex"                  }
-  ,
-  {
-    "attiny13A"                  }
-  ,
+  {"test.hex"},
+  {"attiny13A"},
   0x9007,				/* Signature bytes for 328P */
-  {
-    0x03, 0x6A, 0x1F, 0x00                  }
+  {0x03, 0x6A, 0x1F, 0x00}
   ,            // pre program fuses (prot/lock, low, high, ext)
-  {
-    0x03, 0x6A, 0x1F, 0x00                  }
+  {0x03, 0x6A, 0x1F, 0x00}
   ,            // post program fuses
-  {
-    0x03, 0xFF, 0x1F, 0x00                  }
+  {0x03, 0xFF, 0x1F, 0x00}
   ,           // fuse mask
   1024,     // size of chip flash in bytes
   32,   // size in bytes of flash page
   (char PROGMEM *) calibration_firmware,  //use NULL to skip calibration
-  {
-    ":1000000009C00EC00DC00CC00BC00AC009C008C09A\n"
-      ":1000100007C006C011241FBECFE9CDBF02D010C05B\n"
-      ":10002000EFCFBC9A90E12FEB34ED41E0215030400E\n"
-      ":100030004040E1F700C0000088B3892788BBF3CFB8\n"
-      ":04004000F894FFCF62\n"
-      ":00000001FF\n"
-  }
+  (char PROGMEM *) final_firmware, 
 };
 
 
