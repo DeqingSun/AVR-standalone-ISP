@@ -225,7 +225,7 @@ void loop (void) {
         error_no_fatal(F("Calibrate failed, got 0xFF"));
         break;
       }
-      Serial.print(F("\nErase flash again."));
+      Serial.println(F("\nErase flash again."));
       start_pmode();  
       eraseChip();  
     }
@@ -238,6 +238,11 @@ void loop (void) {
     uint8_t pagesize = pgm_read_byte(&targetimage->image_pagesize);
     uint16_t chipsize = pgm_read_word(&targetimage->chipsize);
 
+    uint16_t calibration_positon = 0xFFFF;  //
+    if (osscal_value!=0xff){
+      calibration_positon = pgm_read_word(&targetimage->osccal_flash_pos); 
+    }
+
     //Serial.println(chipsize, DEC);
     while (pageaddr < chipsize) {
       byte *hextextpos = readImagePage (hextext, pageaddr, pagesize, pageBuffer);
@@ -245,7 +250,13 @@ void loop (void) {
       boolean blankpage = true;
       for (uint8_t i=0; i<pagesize; i++) {
         if (pageBuffer[i] != 0xFF) blankpage = false;
-      }          
+      }
+
+      if (calibration_positon!=0xFFFF && calibration_positon>=(pageaddr) && calibration_positon<((pageaddr+pagesize))){
+        pageBuffer[calibration_positon&(pagesize-1)]=osscal_value;
+        calibration_positon=0xFFFF;
+      }
+
       if (! blankpage) {
         if (! flashPage(pageBuffer, pageaddr, pagesize)){	
           error_no_fatal(F("Flash programming failed"));
@@ -256,6 +267,17 @@ void loop (void) {
       pageaddr += pagesize;
 
       if (hextextpos == NULL) break;
+    }
+
+    if (calibration_positon!=0xFFFF){  //flash osccal separately
+      for (uint8_t i=0; i<pagesize; i++) {
+        pageBuffer[i] = 0xFF;
+      }
+      pageBuffer[calibration_positon&(pagesize-1)]=osscal_value;
+      if (! flashPage(pageBuffer, calibration_positon&(~(pagesize-1)), pagesize)){	
+        error_no_fatal(F("Flash programming failed"));
+        break;
+      }
     }
 
     // Set fuses to 'final' state
@@ -289,5 +311,4 @@ void loop (void) {
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
-
 
