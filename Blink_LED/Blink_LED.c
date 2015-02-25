@@ -7,7 +7,10 @@
 int main(void){
 	{
 		unsigned char osccal_calibrated=pgm_read_byte(0x3FF);
-		if (osccal_calibrated!=0xFF) OSCCAL=osccal_calibrated;
+		if (osccal_calibrated!=0xFF){
+			while (osccal_calibrated > OSCCAL) OSCCAL++;
+			while (osccal_calibrated < OSCCAL) OSCCAL--;
+		}
 	}
 
 	DDRB|=(1<<PB1);
