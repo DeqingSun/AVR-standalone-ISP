@@ -428,30 +428,7 @@ boolean verifyImage (byte *hextext)  {
 #endif
 
       // verify this byte!
-      if (lineaddr % 2) {
-        // for 'high' bytes:
-        if (b != (spi_transaction(0x28, lineaddr >> 9, lineaddr / 2, 0) & 0xFF)) {
-          Serial.print(F("verification error at address 0x")); 
-          Serial.print(lineaddr, HEX);
-          Serial.print(F(" Should be 0x")); 
-          Serial.print(b, HEX); 
-          Serial.print(F(" not 0x"));
-          Serial.println((spi_transaction(0x28, lineaddr >> 9, lineaddr / 2, 0) & 0xFF), HEX);
-          return false;
-        }
-      } 
-      else {
-        // for 'low bytes'
-        if (b != (spi_transaction(0x20, lineaddr >> 9, lineaddr / 2, 0) & 0xFF)) {
-          Serial.print(F("verification error at address 0x")); 
-          Serial.print(lineaddr, HEX);
-          Serial.print(F(" Should be 0x")); 
-          Serial.print(b, HEX); 
-          Serial.print(F(" not 0x"));
-          Serial.println((spi_transaction(0x20, lineaddr >> 9, lineaddr / 2, 0) & 0xFF), HEX);
-          return false;
-        }
-      } 
+      if (!verify_byte(lineaddr,b)) return false;
       lineaddr++;  
     }
 
@@ -525,21 +502,8 @@ boolean verifyImage_with_osccal (byte *hextext, unsigned int pos, unsigned char 
 #endif
 
       // verify this byte!
-      if (lineaddr % 2) {
-        // for 'high' bytes:
-        data = (spi_transaction(0x28, lineaddr >> 9, lineaddr / 2, 0) & 0xFF);
-      }else{
-        // for 'low bytes'
-        data = (spi_transaction(0x20, lineaddr >> 9, lineaddr / 2, 0) & 0xFF);
-      }
-      if (b != data && lineaddr != pos) {
-        Serial.print(F("verification error at address 0x")); 
-        Serial.print(lineaddr, HEX);
-        Serial.print(F(" Should be 0x")); 
-        Serial.print(b, HEX); 
-        Serial.print(F(" not 0x"));
-        Serial.println(data, HEX);
-        return false;
+      if (lineaddr!=pos){
+        if (!verify_byte(lineaddr,b)) return false;
       }
       lineaddr++;  
     }
@@ -559,23 +523,30 @@ boolean verifyImage_with_osccal (byte *hextext, unsigned int pos, unsigned char 
   }
   
   //check osccal seperately
-  if (pos % 2) {
+  if (!verify_byte(pos,value)) return false;
+  
+  return true;
+}
+
+boolean verify_byte(uint16_t addr,uint8_t value){
+  uint8_t data;
+  //check osccal seperately
+  if (addr % 2) {
     // for 'high' bytes:
-    data = (spi_transaction(0x28, pos >> 9, pos / 2, 0) & 0xFF);
+    data = (spi_transaction(0x28, addr >> 9, addr / 2, 0) & 0xFF);
   }else{
     // for 'low bytes'
-    data = (spi_transaction(0x20, pos >> 9, pos / 2, 0) & 0xFF);
+    data = (spi_transaction(0x20, addr >> 9, addr / 2, 0) & 0xFF);
   }
   if (value != data) {
     Serial.print(F("verification error at address 0x")); 
-    Serial.print(pos, HEX);
+    Serial.print(addr, HEX);
     Serial.print(F(" Should be 0x")); 
-    Serial.print(b, HEX); 
+    Serial.print(value, HEX); 
     Serial.print(F(" not 0x"));
     Serial.println(data, HEX);
     return false;
-  }
-  
+  }  
   return true;
 }
 
