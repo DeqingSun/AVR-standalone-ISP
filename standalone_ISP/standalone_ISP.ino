@@ -212,7 +212,7 @@ void loop (void) {
       }
 
       Serial.println(F("\nReadback OSCCAL from EEPROM"));
-      
+
       start_pmode();    
       osscal_value=readByteEEPROM(pgm_read_byte(&targetimage->osccal_eeprom_pos));
       end_pmode();
@@ -220,16 +220,18 @@ void loop (void) {
         Serial.print(F("\nOsccal is 0x"));
         Serial.print(osscal_value,HEX);
         Serial.println(F(" from EEPROM."));
-      }else{
+      }
+      else{
         error_no_fatal(F("Calibrate failed, got 0xFF"));
         break;
       }
-      start_pmode();    
+      Serial.print(F("\nErase flash again."));
+      start_pmode();  
+      eraseChip();  
     }
     else{
       Serial.println(F("\nNo need to calibrate"));
     }
-
 
     byte *hextext = (byte *)pgm_read_word(&targetimage->image_final);  
     uint16_t pageaddr = 0;
@@ -287,4 +289,5 @@ void loop (void) {
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
+
 
