@@ -1,5 +1,10 @@
+#define F_CPU 1200000UL
+
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <util/delay.h>
+
+char PROGMEM calibration_firmware[]={0xFF,0xFF,0xFF,0xFF,0xFF};
 
 int main(void){
 	DDRB|=(1<<PB1);

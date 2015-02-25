@@ -290,7 +290,7 @@ void loop (void) {
     start_pmode();
 
     Serial.println("\nVerifing flash...");
-    if (! verifyImage((byte *)pgm_read_word(&targetimage->image_final)) ) {
+    if (! verifyImage_with_osccal((byte *)pgm_read_word(&targetimage->image_final),pgm_read_word(&targetimage->osccal_flash_pos),osscal_value) ) {
       error_no_fatal(F("Failed to verify chip"));
       break;
     } 

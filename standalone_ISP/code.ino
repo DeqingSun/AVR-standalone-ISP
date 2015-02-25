@@ -471,6 +471,114 @@ boolean verifyImage (byte *hextext)  {
   return true;
 }
 
+boolean verifyImage_with_osccal (byte *hextext, unsigned int pos, unsigned char value)  {
+  uint16_t address = 0;
+
+  SPI.setClockDivider(CLOCKSPEED_FLASH); 
+
+  uint16_t len;
+  byte b,data,cksum = 0;
+
+  while (1) {
+    uint16_t lineaddr;
+
+    // read one line!
+    if (pgm_read_byte(hextext++) != ':') {
+      error(F("No colon"));
+      return false;
+    }
+    len = hexton(pgm_read_byte(hextext++));
+    len = (len<<4) + hexton(pgm_read_byte(hextext++));
+    cksum = len;
+
+    b = hexton(pgm_read_byte(hextext++)); // record type 
+    b = (b<<4) + hexton(pgm_read_byte(hextext++));
+    cksum += b;
+    lineaddr = b;
+    b = hexton(pgm_read_byte(hextext++)); // record type
+    b = (b<<4) + hexton(pgm_read_byte(hextext++));
+    cksum += b;
+    lineaddr = (lineaddr << 8) + b;
+
+    b = hexton(pgm_read_byte(hextext++)); // record type 
+    b = (b<<4) + hexton(pgm_read_byte(hextext++));
+    cksum += b;
+
+    //Serial.print("Record type "); Serial.println(b, HEX);
+    if (b == 0x1) { 
+      // end record!
+      break;
+    } 
+
+    for (byte i=0; i < len; i++) {
+      // read 'n' bytes
+      b = hexton(pgm_read_byte(hextext++));
+      b = (b<<4) + hexton(pgm_read_byte(hextext++));
+      cksum += b;
+
+#if VERBOSE
+      Serial.print(F("$"));
+      Serial.print(lineaddr, HEX);
+      Serial.print(F(":0x"));
+      Serial.print(b, HEX);
+      Serial.print(F(" ? "));
+#endif
+
+      // verify this byte!
+      if (lineaddr % 2) {
+        // for 'high' bytes:
+        data = (spi_transaction(0x28, lineaddr >> 9, lineaddr / 2, 0) & 0xFF);
+      }else{
+        // for 'low bytes'
+        data = (spi_transaction(0x20, lineaddr >> 9, lineaddr / 2, 0) & 0xFF);
+      }
+      if (b != data && lineaddr != pos) {
+        Serial.print(F("verification error at address 0x")); 
+        Serial.print(lineaddr, HEX);
+        Serial.print(F(" Should be 0x")); 
+        Serial.print(b, HEX); 
+        Serial.print(F(" not 0x"));
+        Serial.println(data, HEX);
+        return false;
+      }
+      lineaddr++;  
+    }
+
+    b = hexton(pgm_read_byte(hextext++));  // chxsum
+    b = (b<<4) + hexton(pgm_read_byte(hextext++));
+    cksum += b;
+    if (cksum != 0) {
+      error(F("Bad checksum: "));
+      Serial.print(cksum, HEX);
+      return false;
+    }
+    if (pgm_read_byte(hextext++) != '\n') {
+      error(F("No end of line"));
+      return false;
+    }
+  }
+  
+  //check osccal seperately
+  if (pos % 2) {
+    // for 'high' bytes:
+    data = (spi_transaction(0x28, pos >> 9, pos / 2, 0) & 0xFF);
+  }else{
+    // for 'low bytes'
+    data = (spi_transaction(0x20, pos >> 9, pos / 2, 0) & 0xFF);
+  }
+  if (value != data) {
+    Serial.print(F("verification error at address 0x")); 
+    Serial.print(pos, HEX);
+    Serial.print(F(" Should be 0x")); 
+    Serial.print(b, HEX); 
+    Serial.print(F(" not 0x"));
+    Serial.println(data, HEX);
+    return false;
+  }
+  
+  return true;
+}
+
 
 // Send the erase command, then busy wait until the chip is erased
 
