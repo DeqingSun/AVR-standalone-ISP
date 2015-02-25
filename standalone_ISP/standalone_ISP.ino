@@ -45,6 +45,8 @@ byte pageBuffer[128]; 		       /* One page of flash */
 #define LED_ERR 8
 #define LED_PROGMODE A0
 
+#define DEBUG_PIN 2
+
 void setup () {
   Serial.begin(115200); 			/* Initialize serial for status msgs */
   Serial.println(F("\nAdaBootLoader Bootstrap programmer (originally OptiLoader Bill Westfield (WestfW))"));
@@ -67,6 +69,8 @@ void setup () {
   // OC1A output, fast PWM
   TCCR1A = _BV(WGM11) | _BV(COM1A1);
   TCCR1B = _BV(WGM13) | _BV(WGM12) | _BV(CS10); // no clock prescale
+
+  pinMode(DEBUG_PIN,OUTPUT);
 }
 
 
@@ -107,7 +111,7 @@ void loop (void) {
     end_pmode();
     start_pmode();    
 
-    if (0&targetimage->image_calibration!=NULL){
+    if (targetimage->image_calibration!=NULL){
       Serial.println(F("\nStart calibration, write calibration firmware"));
       byte *hextext = (byte *)pgm_read_word(&targetimage->image_calibration);  
       uint16_t pageaddr = 0;
@@ -133,11 +137,87 @@ void loop (void) {
         if (hextextpos == NULL) break;
       }
 
-      break;
+      end_pmode();
+      start_pmode();    
 
-
+      Serial.println("\nVerifing flash...");
+      if (! verifyImage((byte *)pgm_read_word(&targetimage->image_calibration)) ) {
+        error_no_fatal(F("Failed to verify chip"));
+        break;
+      } 
+      else {
+        Serial.println(F("\tFlash verified correctly!"));
+      }
 
       end_pmode();
+
+      // do calibation here
+      pinMode(RESET, OUTPUT);
+      digitalWrite(RESET, LOW);  //hold RST
+      delay(50);
+      pinMode(MISO, INPUT);
+      pinMode(MOSI, INPUT); 
+      digitalWrite(MOSI, HIGH);  //pull UP mosi
+      digitalWrite(MISO, HIGH);  //pull UP miso, suppress noise
+      digitalWrite(SCK, HIGH);  //pull UP sck, suppress noise
+      //let MOSI act as OC2A, 16E6/(2*244)=32787
+      TCCR2A=(0b01<<COM2A0)|(0b10<<WGM20); //TOGGLE MOSI on CTC      
+      TCCR2B=(0b001<<CS20);
+      OCR2A=243;
+      pinMode(MOSI, OUTPUT);
+      delay(50);
+      pinMode(RESET, INPUT);  //release RST
+
+      {  //waiting for calibration response
+        unsigned long millis_begin=millis();
+        unsigned long millis_phase=millis_begin;
+        boolean cali_finished=false;
+        boolean cali_last=HIGH;
+        unsigned char edge_count=0;
+        while (!cali_finished){
+          unsigned long millis_now=millis();
+          if ((millis_now-millis_begin)>1000){
+            cali_finished=true;
+          }
+          else{
+            boolean cali_input=digitalRead(MISO);
+            if (cali_input!=cali_last){
+              edge_count++;
+              cali_last=cali_input;
+              if (edge_count>=8){
+                cali_finished=true;
+              }
+            }
+          }
+        }
+        Serial.print('\n');
+        Serial.print(edge_count);
+        Serial.println(F(" edge received."));
+        if (edge_count>=8){
+          Serial.println(F("\tCalibrated successfully!"));
+        }
+        else{
+          error_no_fatal(F("Failed to calibrate chip"));
+        }
+      }
+
+      TCCR2A=0;
+      TCCR2B=0;
+      pinMode(MOSI, INPUT);
+      digitalWrite(MOSI, LOW);  
+      digitalWrite(MISO, LOW);  
+      digitalWrite(SCK, LOW);  
+      // calibration over
+
+      /*   start_pmode();    
+       
+       
+       
+       
+       
+       
+       end_pmode();*/
+      break;
       start_pmode();    
 
     }
@@ -202,5 +282,4 @@ void loop (void) {
   target_poweroff(); 			/* turn power off */
   tone(PIEZOPIN, 4000, 200);
 }
-
 
