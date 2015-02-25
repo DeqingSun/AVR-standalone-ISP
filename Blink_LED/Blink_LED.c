@@ -5,7 +5,10 @@
 #include <util/delay.h>
 
 int main(void){
-	OSCCAL=pgm_read_byte(0x3FF);
+	{
+		unsigned char osccal_calibrated=pgm_read_byte(0x3FF);
+		if (osccal_calibrated!=0xFF) OSCCAL=osccal_calibrated;
+	}
 
 	DDRB|=(1<<PB1);
 	DDRB|=(1<<PB4);
