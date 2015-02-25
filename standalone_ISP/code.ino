@@ -342,6 +342,35 @@ boolean flashPage (byte *pagebuff, uint16_t pageaddr, uint8_t pagesize) {
   return true;
 }
 
+unsigned char readByteEEPROM(unsigned int addr) {
+  unsigned char value = spi_transaction(0xA0, (addr >> 8) & 0x1F, addr & 0xFF, 0x00) & 0xFF;
+  return value;
+}
+
+boolean programEEPROM(const unsigned char *imagedata, int pagesize, int imagesize) {
+  for(int idx = 0; idx < imagesize; idx += pagesize) {
+    for(int i = 0; (i < pagesize) && (idx + i < imagesize); i++) {
+      spi_transaction(0xC1, 0x00, i, pgm_read_byte(&imagedata[idx + i]));
+    }
+    spi_transaction(0xC2, idx >> 8, idx & 0xFC, 0x00);
+    busyWait();
+  }
+  return true;
+}
+
+boolean verifyEEPROM(const unsigned char *imagedata, int imagesize) {
+  for(int idx = 0; idx < imagesize; idx++) {
+    byte b = pgm_read_byte(&imagedata[idx]);
+    if(b != spi_transaction(0xA0, idx >> 8, idx & 0xFF, 0x00) & 0xFF) {
+        Serial.print("EEPROM verification error at address 0x"); Serial.print(idx, HEX);
+        Serial.print(" Should be 0x"); Serial.print(b, HEX); Serial.print(" not 0x");
+        Serial.println((spi_transaction(0xA0, idx >> 8, idx & 0xFF, 0x00) & 0xFF), HEX);
+        return false;      
+    }
+  }
+  return true;
+}
+
 // verifyImage does a byte-by-byte verify of the flash hex against the chip
 // Thankfully this does not have to be done by pages!
 // returns true if the image is the same as the hextext, returns false on any error

@@ -47,6 +47,7 @@ image_t PROGMEM image_328 = {
   ,           // fuse mask
   1024,     // size of chip flash in bytes
   32,   // size in bytes of flash page
+  0x00,  //OSCCAL @ 0x00
   (char PROGMEM *) calibration_firmware,  //use NULL to skip calibration
   (char PROGMEM *) final_firmware, 
 };

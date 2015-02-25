@@ -86,6 +86,7 @@ void loop (void) {
 
     uint16_t signature;
     image_t *targetimage;
+    unsigned char osscal_value=0xFF;
 
     if (! (signature = readSignature())){		// Figure out what kind of CPU
       error_no_fatal(F("Signature fail"));
@@ -168,15 +169,15 @@ void loop (void) {
       delay(50);
       pinMode(RESET, INPUT);  //release RST
 
+        unsigned char edge_count=0;
       {  //waiting for calibration response
         unsigned long millis_begin=millis();
         unsigned long millis_phase=millis_begin;
         boolean cali_finished=false;
         boolean cali_last=HIGH;
-        unsigned char edge_count=0;
         while (!cali_finished){
           unsigned long millis_now=millis();
-          if ((millis_now-millis_begin)>1000){
+          if ((millis_now-millis_begin)>600){
             cali_finished=true;
           }
           else{
@@ -193,14 +194,7 @@ void loop (void) {
         Serial.print('\n');
         Serial.print(edge_count);
         Serial.println(F(" edge received."));
-        if (edge_count>=8){
-          Serial.println(F("\tCalibrated successfully!"));
-        }
-        else{
-          error_no_fatal(F("Failed to calibrate chip"));
-        }
       }
-
       TCCR2A=0;
       TCCR2B=0;
       pinMode(MOSI, INPUT);
@@ -209,17 +203,28 @@ void loop (void) {
       digitalWrite(SCK, LOW);  
       // calibration over
 
-      /*   start_pmode();    
-       
-       
-       
-       
-       
-       
-       end_pmode();*/
-      break;
-      start_pmode();    
+      if (edge_count>=8){
+        Serial.println(F("\tCalibrated successfully!"));
+      }
+      else{
+        error_no_fatal(F("Failed to calibrate chip"));
+        break;
+      }
 
+      Serial.println(F("\nReadback OSCCAL from EEPROM"));
+      
+      start_pmode();    
+      osscal_value=readByteEEPROM(pgm_read_byte(&targetimage->osccal_eeprom_pos));
+      end_pmode();
+      if (osscal_value!=0xFF){
+        Serial.print(F("\nOsccal is 0x"));
+        Serial.print(osscal_value,HEX);
+        Serial.println(F(" from EEPROM."));
+      }else{
+        error_no_fatal(F("Calibrate failed, got 0xFF"));
+        break;
+      }
+      start_pmode();    
     }
     else{
       Serial.println(F("\nNo need to calibrate"));
