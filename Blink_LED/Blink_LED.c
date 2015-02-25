@@ -4,9 +4,9 @@
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 
-char PROGMEM calibration_firmware[]={0xFF,0xFF,0xFF,0xFF,0xFF};
-
 int main(void){
+	OSCCAL=pgm_read_byte(0x3FF);
+
 	DDRB|=(1<<PB1);
 	DDRB|=(1<<PB4);
 	TCCR0A=(0b01<<COM0B0)|(0b10<<WGM00);	//CTC mode
